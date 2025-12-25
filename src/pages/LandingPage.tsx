@@ -37,10 +37,14 @@ const LandingPage = () => {
           transition={{ duration: 1, ease: 'easeOut' }}
           className="relative z-10 text-center px-6 max-w-4xl"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-text-hero tracking-tight mb-6">
-            Silent Voices, Audible Vision
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6">
+            <span className="text-black">Silent </span>
+            <span className="text-white">Voices</span>
+            <br />
+            <span className="text-white">Audible </span>
+            <span className="text-black">Vision</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-text-muted-italic italic max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-black italic max-w-2xl mx-auto bg-gray-300/60 px-4 py-2 rounded-lg">
             "What a blind person needs is not a teacher but another self."
           </p>
           
@@ -138,9 +142,21 @@ const LandingPage = () => {
       {/* Section 3: CTA */}
       <section
         ref={section3Ref}
-        className="h-screen snap-start relative flex items-center justify-center bg-background"
+        className="h-screen snap-start relative flex items-center justify-center overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/videos/cta-background.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-background/50" />
         
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

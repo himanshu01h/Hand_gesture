@@ -55,14 +55,18 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
   const extendedCount = Object.values(fingersExtended).filter(Boolean).length;
 
   // ASL Letter Recognition
+  
+  // A - Fist with thumb alongside
   if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && fingersExtended.thumb) {
     return { gesture: 'A', confidence: 0.85 };
   }
 
+  // B - Four fingers extended, thumb tucked
   if (fingersExtended.index && fingersExtended.middle && fingersExtended.ring && fingersExtended.pinky && !fingersExtended.thumb) {
     return { gesture: 'B', confidence: 0.85 };
   }
 
+  // C - Curved hand shape
   if (extendedCount >= 3 && hand[INDEX_TIP].x < hand[PINKY_TIP].x + 0.15) {
     const distance = Math.abs(hand[THUMB_TIP].x - hand[INDEX_TIP].x);
     if (distance > 0.05 && distance < 0.15) {
@@ -70,35 +74,182 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
     }
   }
 
+  // D - Index up, other fingers touch thumb
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    const thumbToMiddle = Math.abs(hand[THUMB_TIP].x - hand[MIDDLE_TIP].x) + Math.abs(hand[THUMB_TIP].y - hand[MIDDLE_TIP].y);
+    if (thumbToMiddle < 0.1) {
+      return { gesture: 'D', confidence: 0.8 };
+    }
+  }
+
+  // I - Pinky extended only
+  if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky && !fingersExtended.thumb) {
+    return { gesture: 'I', confidence: 0.85 };
+  }
+
+  // J - Pinky extended with movement (simplified: pinky up, hand tilted)
+  if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky) {
+    if (hand[PINKY_TIP].x < hand[WRIST].x - 0.05) {
+      return { gesture: 'J', confidence: 0.75 };
+    }
+  }
+
+  // L - Index and thumb extended at right angle
   if (fingersExtended.index && fingersExtended.thumb && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
     return { gesture: 'L', confidence: 0.85 };
   }
 
-  if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
-    return { gesture: 'V', confidence: 0.85 };
+  // O - All fingers curved to touch thumb
+  if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    const thumbToIndex = Math.abs(hand[THUMB_TIP].x - hand[INDEX_TIP].x) + Math.abs(hand[THUMB_TIP].y - hand[INDEX_TIP].y);
+    if (thumbToIndex < 0.08 && !fingersExtended.thumb) {
+      return { gesture: 'O', confidence: 0.8 };
+    }
   }
 
+  // U - Index and middle extended together
+  if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && !fingersExtended.thumb) {
+    const indexMiddleDistance = Math.abs(hand[INDEX_TIP].x - hand[MIDDLE_TIP].x);
+    if (indexMiddleDistance < 0.04) {
+      return { gesture: 'U', confidence: 0.8 };
+    }
+  }
+
+  // V - Index and middle extended apart
+  if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    const indexMiddleDistance = Math.abs(hand[INDEX_TIP].x - hand[MIDDLE_TIP].x);
+    if (indexMiddleDistance > 0.04) {
+      return { gesture: 'V', confidence: 0.85 };
+    }
+  }
+
+  // Y - Thumb and pinky extended
+  if (fingersExtended.thumb && !fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky) {
+    return { gesture: 'Y', confidence: 0.85 };
+  }
+
+  // Z - Index pointing, making Z motion (simplified: index extended, hand tilted)
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && !fingersExtended.thumb) {
+    if (hand[INDEX_TIP].x < hand[INDEX_PIP].x - 0.03) {
+      return { gesture: 'Z', confidence: 0.75 };
+    }
+  }
+
+  // Word Recognition
+
+  // I Love You - Thumb, index, and pinky extended
   if (fingersExtended.thumb && fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky) {
     return { gesture: 'I Love You', confidence: 0.9 };
   }
 
+  // Hello - Open palm, all fingers extended
   if (extendedCount === 5) {
     return { gesture: 'Hello', confidence: 0.8 };
   }
 
+  // Yes - Fist (like nodding)
   if (extendedCount === 0) {
     return { gesture: 'Yes', confidence: 0.6 };
   }
 
+  // No - Index and middle close together, other fingers down
   if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && !fingersExtended.thumb) {
     const distance = Math.abs(hand[INDEX_TIP].x - hand[MIDDLE_TIP].x);
-    if (distance < 0.05) {
+    if (distance < 0.03) {
       return { gesture: 'No', confidence: 0.7 };
     }
   }
 
+  // Please - Flat hand on chest motion (palm open, hand low)
   if (extendedCount >= 4 && hand[WRIST].y > 0.5) {
     return { gesture: 'Please', confidence: 0.6 };
+  }
+
+  // Drink - Thumb to mouth gesture (C-shape near face)
+  if (fingersExtended.thumb && !fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[THUMB_TIP].y < 0.4) {
+      return { gesture: 'Drink', confidence: 0.7 };
+    }
+  }
+
+  // Rain - Fingers down motion (all extended, pointing down)
+  if (extendedCount >= 4 && hand[INDEX_TIP].y > hand[INDEX_PIP].y && hand[MIDDLE_TIP].y > hand[MIDDLE_PIP].y) {
+    return { gesture: 'Rain', confidence: 0.7 };
+  }
+
+  // Eat - Fingers bunched to mouth
+  if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].y < 0.35 && hand[WRIST].y < 0.5) {
+      return { gesture: 'Eat', confidence: 0.7 };
+    }
+  }
+
+  // Thirsty - Finger down throat (index extended, pointing down near neck area)
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].y > hand[INDEX_PIP].y && hand[INDEX_TIP].y < 0.4) {
+      return { gesture: 'Thirsty', confidence: 0.7 };
+    }
+  }
+
+  // Say - Index near mouth
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].y < 0.3 && hand[INDEX_TIP].x > 0.4 && hand[INDEX_TIP].x < 0.6) {
+      return { gesture: 'Say', confidence: 0.7 };
+    }
+  }
+
+  // Maybe - Flat hands alternating (one hand up)
+  if (extendedCount >= 4 && hand[WRIST].y > 0.4 && hand[WRIST].y < 0.6) {
+    if (Math.abs(hand[INDEX_TIP].y - hand[PINKY_TIP].y) < 0.05) {
+      return { gesture: 'Maybe', confidence: 0.65 };
+    }
+  }
+
+  // Don't Know - Hand to forehead then away
+  if (extendedCount >= 3 && hand[INDEX_TIP].y < 0.25) {
+    return { gesture: "Don't Know", confidence: 0.65 };
+  }
+
+  // Forget - Hand from forehead outward
+  if (extendedCount >= 4 && hand[WRIST].y < 0.3 && hand[INDEX_TIP].x > hand[WRIST].x + 0.1) {
+    return { gesture: 'Forget', confidence: 0.65 };
+  }
+
+  // Walk - Two fingers walking motion
+  if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].y > hand[WRIST].y) {
+      return { gesture: 'Walk', confidence: 0.7 };
+    }
+  }
+
+  // Shirt - Pulling shirt gesture (pinching motion at chest level)
+  if (fingersExtended.thumb && fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    const pinchDistance = Math.abs(hand[THUMB_TIP].x - hand[INDEX_TIP].x) + Math.abs(hand[THUMB_TIP].y - hand[INDEX_TIP].y);
+    if (pinchDistance < 0.08 && hand[WRIST].y > 0.4) {
+      return { gesture: 'Shirt', confidence: 0.7 };
+    }
+  }
+
+  // Book - Palms together opening (flat hand)
+  if (extendedCount >= 4 && Math.abs(hand[INDEX_TIP].y - hand[PINKY_TIP].y) < 0.03) {
+    if (hand[WRIST].y > 0.45 && hand[WRIST].y < 0.55) {
+      return { gesture: 'Book', confidence: 0.65 };
+    }
+  }
+
+  // Look - V fingers pointing at eyes
+  if (fingersExtended.index && fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].y < 0.3 && hand[MIDDLE_TIP].y < 0.3) {
+      return { gesture: 'Look', confidence: 0.7 };
+    }
+  }
+
+  // How - Hands together rotating (curved hands)
+  if (extendedCount >= 3 && extendedCount <= 4) {
+    const fingersCurved = hand[INDEX_TIP].y > hand[INDEX_PIP].y - 0.05;
+    if (fingersCurved && hand[WRIST].y > 0.4) {
+      return { gesture: 'How', confidence: 0.65 };
+    }
   }
 
   return { gesture: null, confidence: 0 };
