@@ -19,11 +19,22 @@ const ProjectDescription = () => {
           </div>
         </div>
 
-        <p className="text-muted-foreground mb-6">
+        <p className="text-muted-foreground mb-4">
           An AI-powered platform that bridges the communication gap between the deaf community 
           and hearing individuals by translating American Sign Language (ASL) gestures into 
           spoken words in real-time.
         </p>
+
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-foreground mb-2">Why It Matters for Deaf People</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Over 70 million deaf individuals worldwide face daily communication barriers when interacting with hearing people. This platform empowers the deaf community by providing instant, barrier-free communication without requiring an interpreter or special hardware—just a standard camera. It promotes independence, enables natural conversations in everyday situations like shopping, healthcare, and education, and helps break down the isolation that communication gaps often create.
+          </p>
+          <h4 className="font-semibold text-foreground mb-2">Technologies Used</h4>
+          <p className="text-sm text-muted-foreground">
+            Built with <span className="text-primary font-medium">React</span> and <span className="text-primary font-medium">TypeScript</span> for a robust frontend, <span className="text-primary font-medium">MediaPipe Hands AI</span> for real-time hand landmark detection and gesture recognition, <span className="text-primary font-medium">Web Speech API</span> for converting detected signs into natural spoken audio, <span className="text-primary font-medium">Tailwind CSS</span> for responsive styling, and <span className="text-primary font-medium">Framer Motion</span> for smooth animations—all running directly in the browser with no server required.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="flex items-start gap-3">
