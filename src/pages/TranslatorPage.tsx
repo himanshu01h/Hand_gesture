@@ -1,22 +1,12 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Volume2, VolumeX, Info } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, BookOpen, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useHandTracking } from '@/hooks/useHandTracking';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
-
-const SUPPORTED_GESTURES = [
-  { gesture: 'A', description: 'Fist with thumb up' },
-  { gesture: 'B', description: 'All fingers up, thumb folded' },
-  { gesture: 'C', description: 'Curved hand shape' },
-  { gesture: 'L', description: 'Index & thumb extended (L shape)' },
-  { gesture: 'V', description: 'Peace sign' },
-  { gesture: 'Hello', description: 'Open palm, all fingers spread' },
-  { gesture: 'I Love You', description: 'Thumb, index & pinky extended' },
-  { gesture: 'Yes', description: 'Closed fist' },
-  { gesture: 'No', description: 'Index & middle together' },
-  { gesture: 'Please', description: 'Open palm near chest' },
-];
+import GestureTutorials from '@/components/GestureTutorials';
+import SentenceBuilder from '@/components/SentenceBuilder';
+import ProjectDescription from '@/components/ProjectDescription';
 
 const TranslatorPage = () => {
   const navigate = useNavigate();
@@ -24,7 +14,9 @@ const TranslatorPage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isActive, setIsActive] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
+  const [showTutorials, setShowTutorials] = useState(false);
+  const [showSentenceBuilder, setShowSentenceBuilder] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [translatedText, setTranslatedText] = useState<string[]>([]);
   
   const { gesture, confidence, isLoading } = useHandTracking(videoRef, canvasRef, isActive);
@@ -87,13 +79,27 @@ const TranslatorPage = () => {
           ASL Translator
         </h1>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowInfo(!showInfo)}
+            onClick={() => setShowAbout(!showAbout)}
             className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-            aria-label="Show gesture guide"
+            aria-label="About project"
           >
             <Info className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowTutorials(!showTutorials)}
+            className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+            aria-label="Show tutorials"
+          >
+            <BookOpen className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowSentenceBuilder(!showSentenceBuilder)}
+            className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+            aria-label="Sentence builder"
+          >
+            <MessageSquare className="w-5 h-5" />
           </button>
           <button
             onClick={toggleMute}
@@ -105,26 +111,48 @@ const TranslatorPage = () => {
         </div>
       </header>
 
-      {/* Info Panel */}
+      {/* About Panel */}
       <AnimatePresence>
-        {showInfo && (
+        {showAbout && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="mb-6 overflow-hidden"
           >
-            <div className="bg-card border border-border rounded-xl p-4">
-              <h3 className="font-semibold text-foreground mb-3">Supported Gestures</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {SUPPORTED_GESTURES.map((item) => (
-                  <div key={item.gesture} className="bg-secondary/50 rounded-lg p-2 text-center">
-                    <span className="font-bold text-primary">{item.gesture}</span>
-                    <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ProjectDescription />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Tutorials Panel */}
+      <AnimatePresence>
+        {showTutorials && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden"
+          >
+            <GestureTutorials onSelectGesture={(g) => speak(g)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sentence Builder Panel */}
+      <AnimatePresence>
+        {showSentenceBuilder && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 overflow-hidden"
+          >
+            <SentenceBuilder 
+              detectedGestures={translatedText} 
+              onSpeak={(text) => speak(text)} 
+              onClear={clearText} 
+            />
           </motion.div>
         )}
       </AnimatePresence>

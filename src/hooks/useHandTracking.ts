@@ -135,7 +135,7 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
     }
   }
 
-  // Word Recognition
+// Word Recognition
 
   // I Love You - Thumb, index, and pinky extended
   if (fingersExtended.thumb && fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky) {
@@ -165,10 +165,25 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
     return { gesture: 'Please', confidence: 0.6 };
   }
 
+  // Thank You - Hand from chin forward (flat hand moving away from face)
+  if (extendedCount >= 4 && hand[INDEX_TIP].y < 0.35 && hand[WRIST].y < 0.45) {
+    const movingForward = hand[INDEX_TIP].y > hand[WRIST].y - 0.1;
+    if (movingForward) {
+      return { gesture: 'Thank You', confidence: 0.7 };
+    }
+  }
+
   // Drink - Thumb to mouth gesture (C-shape near face)
   if (fingersExtended.thumb && !fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
     if (hand[THUMB_TIP].y < 0.4) {
       return { gesture: 'Drink', confidence: 0.7 };
+    }
+  }
+
+  // Water - W shape at chin (3 fingers extended)
+  if (fingersExtended.index && fingersExtended.middle && fingersExtended.ring && !fingersExtended.pinky && !fingersExtended.thumb) {
+    if (hand[INDEX_TIP].y < 0.35) {
+      return { gesture: 'Water', confidence: 0.7 };
     }
   }
 
@@ -181,6 +196,46 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
   if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
     if (hand[INDEX_TIP].y < 0.35 && hand[WRIST].y < 0.5) {
       return { gesture: 'Eat', confidence: 0.7 };
+    }
+  }
+
+  // Help - Thumbs up on flat palm motion
+  if (fingersExtended.thumb && !fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[THUMB_TIP].y < hand[WRIST].y && hand[WRIST].y > 0.45) {
+      return { gesture: 'Help', confidence: 0.7 };
+    }
+  }
+
+  // Sorry - Fist circle on chest
+  if (!fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && fingersExtended.thumb) {
+    if (hand[WRIST].y > 0.4 && hand[WRIST].y < 0.6 && hand[WRIST].x > 0.4 && hand[WRIST].x < 0.6) {
+      return { gesture: 'Sorry', confidence: 0.65 };
+    }
+  }
+
+  // Good - Hand from chin down
+  if (extendedCount >= 4 && hand[INDEX_TIP].y < 0.4 && hand[WRIST].y > hand[INDEX_TIP].y) {
+    return { gesture: 'Good', confidence: 0.65 };
+  }
+
+  // Bad - Hand from chin flip down
+  if (extendedCount >= 4 && hand[INDEX_TIP].y > 0.5 && hand[WRIST].y < hand[INDEX_TIP].y) {
+    return { gesture: 'Bad', confidence: 0.65 };
+  }
+
+  // Want - Curved hands pulling toward chest
+  if (extendedCount >= 3 && extendedCount <= 4) {
+    const fingersCurved = hand[INDEX_TIP].y > hand[INDEX_PIP].y - 0.03;
+    if (fingersCurved && hand[WRIST].y > 0.35 && hand[WRIST].y < 0.55) {
+      return { gesture: 'Want', confidence: 0.65 };
+    }
+  }
+
+  // Need - Index bent tapping (bent index)
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    const indexBent = hand[INDEX_TIP].y > hand[INDEX_PIP].y - 0.02;
+    if (indexBent && hand[WRIST].y > 0.4) {
+      return { gesture: 'Need', confidence: 0.65 };
     }
   }
 
@@ -249,6 +304,27 @@ const recognizeGesture = (landmarks: any[]): HandTrackingResult => {
     const fingersCurved = hand[INDEX_TIP].y > hand[INDEX_PIP].y - 0.05;
     if (fingersCurved && hand[WRIST].y > 0.4) {
       return { gesture: 'How', confidence: 0.65 };
+    }
+  }
+
+  // What - Index questioning
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky) {
+    if (hand[INDEX_TIP].x < hand[WRIST].x && hand[WRIST].y > 0.35) {
+      return { gesture: 'What', confidence: 0.65 };
+    }
+  }
+
+  // Where - Index pointing around
+  if (fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && !fingersExtended.pinky && fingersExtended.thumb) {
+    if (hand[INDEX_TIP].y < hand[WRIST].y && hand[WRIST].y > 0.4) {
+      return { gesture: 'Where', confidence: 0.65 };
+    }
+  }
+
+  // Why - Touching forehead with Y hand
+  if (fingersExtended.thumb && !fingersExtended.index && !fingersExtended.middle && !fingersExtended.ring && fingersExtended.pinky) {
+    if (hand[WRIST].y < 0.35) {
+      return { gesture: 'Why', confidence: 0.65 };
     }
   }
 
